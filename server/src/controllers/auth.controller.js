@@ -1,12 +1,15 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import {
   signAccess, signRefresh, verifyRefresh, cookieOptions,
 } from '../lib/jwt.js';
-import { newUserId, newProfileId } from '../engine/core/ids.js';
+import { sendPasswordResetEmail } from '../lib/email.js';
+import { newUserId, newProfileId } from '../../../../src/engine/core/ids.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN = 8;
+const RESET_TTL_MS = 30 * 60 * 1000;
 
 function issueTokens(res, user) {
   const access = signAccess(user);
@@ -14,6 +17,10 @@ function issueTokens(res, user) {
   res.cookie('access_token', access, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
   res.cookie('refresh_token', refresh, cookieOptions);
   return { access, refresh };
+}
+
+function hashToken(raw) {
+  return crypto.createHash('sha256').update(raw).digest('hex');
 }
 
 /* ---------- register ---------- */
@@ -25,7 +32,10 @@ export async function register(req, res) {
     return res.status(400).json({ error: 'Valid email required', code: 'EMAIL_INVALID' });
   }
   if (!password || password.length < PASSWORD_MIN) {
-    return res.status(400).json({ error: `Password must be at least ${PASSWORD_MIN} characters`, code: 'PASSWORD_TOO_SHORT' });
+    return res.status(400).json({
+      error: `Password must be at least ${PASSWORD_MIN} characters`,
+      code: 'PASSWORD_TOO_SHORT',
+    });
   }
   if (!name || name.trim().length < 2) {
     return res.status(400).json({ error: 'Name required', code: 'NAME_INVALID' });
@@ -116,6 +126,7 @@ export async function logout(_req, res) {
 export async function me(req, res) {
   const profile = await prisma.profile.findUnique({
     where: { userId: req.user.id },
+    include: { photos: { orderBy: { order: 'asc' } } },
   });
   res.json({
     user: req.user,
@@ -124,29 +135,25 @@ export async function me(req, res) {
           id: profile.id,
           userId: profile.userId,
           name: profile.name,
+          bio: profile.bio || '',
           birthdate: profile.birthdate != null ? Number(profile.birthdate) : null,
           gender: profile.gender,
           lookingFor: profile.lookingFor,
           location: profile.lat != null ? { lat: profile.lat, lng: profile.lng } : null,
           interests: profile.interests || [],
           verified: profile.verified,
+          photos: (profile.photos || []).map((p) => ({
+            id: p.id,
+            url: p.url,
+            order: p.order,
+            isPrimary: p.isPrimary,
+          })),
         }
       : null,
   });
 }
 
-/* =========================================================
-   Password reset
-   ========================================================= */
-
-import crypto from 'node:crypto';
-import { sendPasswordResetEmail } from '../lib/email.js';
-
-const RESET_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-function hashToken(raw) {
-  return crypto.createHash('sha256').update(raw).digest('hex');
-}
+/* ---------- password reset ---------- */
 
 export async function forgotPassword(req, res) {
   const { email } = req.body || {};
@@ -156,15 +163,11 @@ export async function forgotPassword(req, res) {
 
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
 
-  // Always return 200 even if user not found — avoids email enumeration
-  if (!user) {
-    return res.json({ ok: true });
-  }
+  // Always 200 — do not leak whether the email exists
+  if (!user) return res.json({ ok: true });
 
-  // Delete any existing tokens for this user
   await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
 
-  // Generate + store a fresh token
   const raw = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashToken(raw);
   const expiresAt = new Date(Date.now() + RESET_TTL_MS);
@@ -183,7 +186,6 @@ export async function forgotPassword(req, res) {
     return res.status(500).json({ error: 'Could not send email', code: 'EMAIL_FAILED' });
   }
 
-  // In dev, log the link so you can test without email delivery
   if (process.env.NODE_ENV !== 'production') {
     console.log('[forgot-password] reset link:', resetUrl);
   }
@@ -213,105 +215,8 @@ export async function resetPassword(req, res) {
   const passwordHash = await bcrypt.hash(password, 12);
 
   await prisma.$transaction([
-    prisma.user.update({
-      where: { id: row.userId },
-      data: { passwordHash },
-    }),
-    prisma.passwordResetToken.update({
-      where: { id: row.id },
-      data: { usedAt: new Date() },
-    }),
-  ]);
-
-  res.json({ ok: true });
-}
-
-/* =========================================================
-   Password reset
-   ========================================================= */
-
-import crypto from 'node:crypto';
-import { sendPasswordResetEmail } from '../lib/email.js';
-
-const RESET_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-function hashToken(raw) {
-  return crypto.createHash('sha256').update(raw).digest('hex');
-}
-
-export async function forgotPassword(req, res) {
-  const { email } = req.body || {};
-  if (!email) {
-    return res.status(400).json({ error: 'Email required', code: 'EMAIL_REQUIRED' });
-  }
-
-  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-
-  // Always return 200 even if user not found — avoids email enumeration
-  if (!user) {
-    return res.json({ ok: true });
-  }
-
-  // Delete any existing tokens for this user
-  await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
-
-  // Generate + store a fresh token
-  const raw = crypto.randomBytes(32).toString('hex');
-  const tokenHash = hashToken(raw);
-  const expiresAt = new Date(Date.now() + RESET_TTL_MS);
-
-  await prisma.passwordResetToken.create({
-    data: { userId: user.id, tokenHash, expiresAt },
-  });
-
-  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const resetUrl = `${frontend}/reset-password?token=${raw}`;
-
-  try {
-    await sendPasswordResetEmail({ to: user.email, name: user.name, resetUrl });
-  } catch (e) {
-    console.error('[forgot-password] email failed:', e.message);
-    return res.status(500).json({ error: 'Could not send email', code: 'EMAIL_FAILED' });
-  }
-
-  // In dev, log the link so you can test without email delivery
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[forgot-password] reset link:', resetUrl);
-  }
-
-  res.json({ ok: true });
-}
-
-export async function resetPassword(req, res) {
-  const { token, password } = req.body || {};
-  if (!token || !password) {
-    return res.status(400).json({ error: 'Token and password required', code: 'VALIDATION_FAILED' });
-  }
-  if (password.length < PASSWORD_MIN) {
-    return res.status(400).json({
-      error: `Password must be at least ${PASSWORD_MIN} characters`,
-      code: 'PASSWORD_TOO_SHORT',
-    });
-  }
-
-  const tokenHash = hashToken(token);
-  const row = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
-
-  if (!row || row.usedAt || row.expiresAt < new Date()) {
-    return res.status(400).json({ error: 'Invalid or expired token', code: 'TOKEN_INVALID' });
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: row.userId },
-      data: { passwordHash },
-    }),
-    prisma.passwordResetToken.update({
-      where: { id: row.id },
-      data: { usedAt: new Date() },
-    }),
+    prisma.user.update({ where: { id: row.userId }, data: { passwordHash } }),
+    prisma.passwordResetToken.update({ where: { id: row.id }, data: { usedAt: new Date() } }),
   ]);
 
   res.json({ ok: true });
