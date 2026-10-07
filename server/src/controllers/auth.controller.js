@@ -5,7 +5,7 @@ import {
   signAccess, signRefresh, verifyRefresh, cookieOptions,
 } from '../lib/jwt.js';
 import { sendPasswordResetEmail } from '../lib/email.js';
-import { newUserId, newProfileId } from '../../../../src/engine/core/ids.js';
+import { newUserId, newProfileId } from '../../../src/engine/core/ids.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN = 8;
