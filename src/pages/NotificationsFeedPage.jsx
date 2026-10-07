@@ -6,7 +6,7 @@ import {
 import { HiOutlineHeart } from 'react-icons/hi2';
 import { notificationsApi } from '../api/notifications.js';
 
-export default function NotificationsPage() {
+export default function NotificationsFeedPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

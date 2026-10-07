@@ -33,7 +33,7 @@ import HelpPage from './pages/profile/HelpPage.jsx';
 import PublicProfilePage from './pages/PublicProfilePage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import LandingPage from './pages/LandingPage.jsx';
-import NotificationsPage from './pages/NotificationsPage.jsx';
+import NotificationsFeedPage from './pages/NotificationsFeedPage.jsx';
 import DeleteAccountPage from './pages/profile/DeleteAccountPage.jsx';
 
 export default function App() {
