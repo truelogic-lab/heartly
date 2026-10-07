@@ -32,14 +32,18 @@ export default function App() {
 
       {/* Authenticated — wrapped in the app shell with bottom tabs */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/interests" element={<InterestsPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/match/:matchId" element={<MatchPage />} />
+        <Route path="/chat/:matchId" element={<ChatThreadPage />} />
+
         <Route element={<AppShell />}>
           <Route path="/" element={<Navigate to="/discover" replace />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/swipe" element={<SwipePage />} />
-          <Route path="/match/:matchId" element={<MatchPage />} />
           <Route path="/chat" element={<ChatListPage />} />
-          <Route path="/chat/:matchId" element={<ChatThreadPage />} />
-          <Route path="/interests" element={<InterestsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/requests" element={<RequestsPage />} />
         </Route>
