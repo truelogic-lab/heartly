@@ -126,30 +126,38 @@ export async function logout(_req, res) {
 export async function me(req, res) {
   const profile = await prisma.profile.findUnique({
     where: { userId: req.user.id },
-    include: { photos: { orderBy: { order: 'asc' } } },
   });
+
+  if (!profile) {
+    return res.json({ user: req.user, profile: null });
+  }
+
+  // Fetch photos separately — no relation declared on Profile
+  const photos = await prisma.photo.findMany({
+    where: { userId: req.user.id },
+    orderBy: { order: "asc" },
+  });
+
   res.json({
     user: req.user,
-    profile: profile
-      ? {
-          id: profile.id,
-          userId: profile.userId,
-          name: profile.name,
-          bio: profile.bio || '',
-          birthdate: profile.birthdate != null ? Number(profile.birthdate) : null,
-          gender: profile.gender,
-          lookingFor: profile.lookingFor,
-          location: profile.lat != null ? { lat: profile.lat, lng: profile.lng } : null,
-          interests: profile.interests || [],
-          verified: profile.verified,
-          photos: (profile.photos || []).map((p) => ({
-            id: p.id,
-            url: p.url,
-            order: p.order,
-            isPrimary: p.isPrimary,
-          })),
-        }
-      : null,
+    profile: {
+      id: profile.id,
+      userId: profile.userId,
+      name: profile.name,
+      bio: profile.bio || "",
+      birthdate: profile.birthdate != null ? Number(profile.birthdate) : null,
+      gender: profile.gender,
+      lookingFor: profile.lookingFor,
+      location: profile.lat != null ? { lat: profile.lat, lng: profile.lng } : null,
+      interests: profile.interests || [],
+      verified: profile.verified,
+      photos: photos.map((p) => ({
+        id: p.id,
+        url: p.url,
+        order: p.order,
+        isPrimary: p.isPrimary,
+      })),
+    },
   });
 }
 
