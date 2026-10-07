@@ -17,10 +17,24 @@ router.put('/me', async (req, res, next) => {
     const engine = req.app.locals.engine;
     const { userId = 'demo_user', ...patch } = req.body;
 
-    // Ensure the profile exists first (creates a minimal one if missing)
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required', code: 'VALIDATION_FAILED' });
+    }
+
+    // 1. Ensure the user row exists
+    const existingUser = await engine.repositories.users.findById(userId);
+    if (!existingUser) {
+      await engine.repositories.users.createWithId({
+        id: userId,
+        email: patch.email || `${userId}@heartly.local`,
+        name: patch.name || 'Anonymous',
+      });
+    }
+
+    // 2. Ensure the profile exists
     await engine.services.profile.ensureProfile(userId, {});
 
-    // Then apply the patch
+    // 3. Apply the update
     const updated = await engine.services.profile.update(userId, patch);
     res.json(updated);
   } catch (e) { next(e); }

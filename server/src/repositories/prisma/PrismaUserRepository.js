@@ -13,6 +13,24 @@ export class PrismaUserRepository extends UserRepository {
       data: { id: newUserId(), email: email.toLowerCase(), name: name ?? '', passwordHash: passwordHash ?? null },
     });
   }
+
+  /** Create a user with an explicit id. Used by API routes for demo users. */
+  async createWithId({ id, email, name, passwordHash }) {
+    try {
+      return await prisma.user.create({
+        data: {
+          id,
+          email: (email || `${id}@heartly.local`).toLowerCase(),
+          name: name ?? '',
+          passwordHash: passwordHash ?? null,
+        },
+      });
+    } catch (e) {
+      if (e.code === 'P2002') return prisma.user.findUnique({ where: { id } });
+      throw e;
+    }
+  }
+
   async update(id, patch) {
     try {
       return await prisma.user.update({
