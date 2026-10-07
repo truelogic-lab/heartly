@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import {
   register, login, refresh, logout, me,
-  forgotPassword, resetPassword,
+  forgotPassword, resetPassword, deleteAccount,
 } from '../controllers/auth.controller.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -31,5 +31,6 @@ router.post('/logout', logout);
 router.get('/me', requireAuth, me);
 router.post('/forgot-password', resetLimiter, forgotPassword);
 router.post('/reset-password', resetLimiter, resetPassword);
+router.delete('/account', requireAuth, deleteAccount);
 
 export default router;

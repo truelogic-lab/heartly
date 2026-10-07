@@ -32,6 +32,9 @@ import DataPage from './pages/profile/DataPage.jsx';
 import HelpPage from './pages/profile/HelpPage.jsx';
 import PublicProfilePage from './pages/PublicProfilePage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
+import NotificationsPage from './pages/NotificationsPage.jsx';
+import DeleteAccountPage from './pages/profile/DeleteAccountPage.jsx';
 
 export default function App() {
   const { loading } = useSession();
@@ -62,8 +65,8 @@ export default function App() {
         <Route path="/chat/:matchId" element={<ChatThreadPage />} />
 
         <Route element={<AppShell />}>
-          <Route path="/" element={<Navigate to="/discover" replace />} />
-          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/" element={<LandingPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/swipe" element={<SwipePage />} />
           <Route path="/chat" element={<ChatListPage />} />
           <Route path="/profile" element={<ProfilePage />} />

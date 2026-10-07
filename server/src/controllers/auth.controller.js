@@ -229,3 +229,34 @@ export async function resetPassword(req, res) {
 
   res.json({ ok: true });
 }
+
+
+/* ---------- delete account ---------- */
+
+export async function deleteAccount(req, res) {
+  const userId = req.user.id;
+  const { password, confirm } = req.body || {};
+
+  if (confirm !== "DELETE") {
+    return res.status(400).json({
+      error: "Please type DELETE to confirm",
+      code: "CONFIRMATION_REQUIRED",
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || !user.passwordHash) {
+    return res.status(404).json({ error: "User not found", code: "NOT_FOUND" });
+  }
+
+  const ok = await bcrypt.compare(password || "", user.passwordHash);
+  if (!ok) {
+    return res.status(401).json({ error: "Incorrect password", code: "INVALID_PASSWORD" });
+  }
+
+  await prisma.user.delete({ where: { id: userId } });
+
+  res.clearCookie("access_token", cookieOptions);
+  res.clearCookie("refresh_token", cookieOptions);
+  res.json({ ok: true });
+}

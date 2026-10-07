@@ -8,6 +8,7 @@ import chatRoutes from './chat.routes.js';
 import safetyRoutes from './safety.routes.js';
 import uploadRoutes from './upload.routes.js';
 import photosRoutes from './photos.routes.js';
+import notificationsRoutes from './notifications.routes.js';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.use('/auth', authRoutes);
 router.use('/profile', profileRoutes);
 router.use('/profile/photos', photosRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/notifications', notificationsRoutes);
 router.use('/', discoveryRoutes);
 router.use('/', likeRoutes);
 router.use('/matches', matchRoutes);
