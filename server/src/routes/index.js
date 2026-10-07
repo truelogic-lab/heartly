@@ -7,6 +7,7 @@ import matchRoutes from './match.routes.js';
 import chatRoutes from './chat.routes.js';
 import safetyRoutes from './safety.routes.js';
 import uploadRoutes from './upload.routes.js';
+import photosRoutes from './photos.routes.js';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
 router.use('/auth', authRoutes);
 router.use('/profile', profileRoutes);
+router.use('/profile/photos', photosRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/', discoveryRoutes);
 router.use('/', likeRoutes);

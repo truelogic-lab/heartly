@@ -253,6 +253,15 @@ export default function ProfilePage() {
         {/* Menu */}
         <ul className="profile-menu">
           <li>
+            <Link to="/profile/photos" className="profile-menu__item">
+              <span className="profile-menu__icon"><FiCamera /></span>
+              <span className="profile-menu__label">Photos</span>
+              <span className="profile-menu__value">{profile?.photos?.length ?? 0} of 6</span>
+              <FiChevronRight className="profile-menu__chev" />
+            </Link>
+          </li>
+
+          <li>
             <Link to="/interests" className="profile-menu__item">
               <span className="profile-menu__icon"><FiTag /></span>
               <span className="profile-menu__label">Interests</span>
