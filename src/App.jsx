@@ -24,6 +24,11 @@ import PhotosPage from './pages/profile/PhotosPage.jsx';
 import LanguagePage from './pages/profile/LanguagePage.jsx';
 import NotificationsPage from './pages/profile/NotificationsPage.jsx';
 import PrivacyPage from './pages/profile/PrivacyPage.jsx';
+import BlockedPage from './pages/profile/BlockedPage.jsx';
+import VisibilityPage from './pages/profile/VisibilityPage.jsx';
+import ReportPage from './pages/profile/ReportPage.jsx';
+import GuidelinesPage from './pages/profile/GuidelinesPage.jsx';
+import DataPage from './pages/profile/DataPage.jsx';
 import HelpPage from './pages/profile/HelpPage.jsx';
 import PublicProfilePage from './pages/PublicProfilePage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
@@ -68,6 +73,11 @@ export default function App() {
             <Route path="/profile/language" element={<LanguagePage />} />
             <Route path="/profile/notifications" element={<NotificationsPage />} />
             <Route path="/profile/privacy" element={<PrivacyPage />} />
+            <Route path="/profile/privacy/blocked" element={<BlockedPage />} />
+            <Route path="/profile/privacy/visibility" element={<VisibilityPage />} />
+            <Route path="/profile/privacy/report" element={<ReportPage />} />
+            <Route path="/profile/privacy/guidelines" element={<GuidelinesPage />} />
+            <Route path="/profile/privacy/data" element={<DataPage />} />
             <Route path="/profile/help" element={<HelpPage />} />
         </Route>
       </Route>

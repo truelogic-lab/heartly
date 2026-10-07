@@ -1,25 +1,40 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FiChevronLeft, FiShield, FiEye, FiUserX, FiAlertOctagon,
   FiSlash, FiFileText, FiChevronRight,
 } from 'react-icons/fi';
-
-const ITEMS = [
-  { icon: <FiEye />,          label: 'Who can see me',      to: '/profile/privacy/visibility' },
-  { icon: <FiUserX />,        label: 'Blocked accounts',    to: '/profile/privacy/blocked', value: '0' },
-  { icon: <FiAlertOctagon />, label: 'Report a problem',    to: '/profile/privacy/report' },
-  { icon: <FiSlash />,        label: 'Hide my profile',     to: '/profile/privacy/hide' },
-  { icon: <FiFileText />,     label: 'Safety guidelines',   to: '/profile/privacy/guidelines' },
-  { icon: <FiShield />,       label: 'Data & privacy',      to: '/profile/privacy/data' },
-];
+import { safetyApi } from '../../api/safety.js';
 
 export default function PrivacyPage() {
   const navigate = useNavigate();
+  const [blockedCount, setBlockedCount] = useState(0);
+
+  useEffect(() => {
+    safetyApi
+      .listBlocked()
+      .then((r) => setBlockedCount(r?.items?.length ?? 0))
+      .catch(() => {});
+  }, []);
+
+  const items = [
+    { icon: <FiEye />,          label: 'Who can see me',      to: '/profile/privacy/visibility' },
+    { icon: <FiUserX />,        label: 'Blocked accounts',    to: '/profile/privacy/blocked', value: blockedCount > 0 ? String(blockedCount) : '' },
+    { icon: <FiAlertOctagon />, label: 'Report a problem',    to: '/profile/privacy/report' },
+    { icon: <FiSlash />,        label: 'Hide my profile',     to: '/profile/privacy/visibility' },
+    { icon: <FiFileText />,     label: 'Safety guidelines',   to: '/profile/privacy/guidelines' },
+    { icon: <FiShield />,       label: 'Data & privacy',      to: '/profile/privacy/data' },
+  ];
 
   return (
     <section className="subpage">
       <header className="subpage__top">
-        <button type="button" className="subpage__back" aria-label="Back" onClick={() => navigate(-1)}>
+        <button
+          type="button"
+          className="subpage__back"
+          aria-label="Back"
+          onClick={() => navigate(-1)}
+        >
           <FiChevronLeft />
         </button>
         <h1 className="subpage__title">Privacy & Safety</h1>
@@ -38,7 +53,7 @@ export default function PrivacyPage() {
         </div>
 
         <ul className="subpage-menu">
-          {ITEMS.map((it) => (
+          {items.map((it) => (
             <li key={it.label}>
               <Link to={it.to} className="subpage-menu__item">
                 <span className="subpage-menu__icon">{it.icon}</span>
