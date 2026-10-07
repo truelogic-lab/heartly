@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { LikeRepository } from '../../../../src/engine/repositories/LikeRepository.js';
-import { newLikeId } from '../../../../src/engine/core/ids.js';
+import { LikeRepository } from '../../engine/repositories/LikeRepository.js';
+import { newLikeId } from '../../engine/core/ids.js';
 
 export class PrismaLikeRepository extends LikeRepository {
   async addLike({ fromUserId, toUserId, kind = 'like' }) {

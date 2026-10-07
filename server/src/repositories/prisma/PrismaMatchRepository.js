@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js';
-import { MatchRepository } from '../../../../src/engine/repositories/MatchRepository.js';
+import { MatchRepository } from '../../engine/repositories/MatchRepository.js';
 
 function shape(m) {
   if (!m) return null;

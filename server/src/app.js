@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 
-import { createEngine } from '../../../../src/engine/index.js';
+import { createEngine } from './engine/index.js';
 import { buildPrismaRepositories } from './repositories/prisma/index.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import routes from './routes/index.js';

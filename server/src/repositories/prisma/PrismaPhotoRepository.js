@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { PhotoRepository } from '../../../../src/engine/repositories/PhotoRepository.js';
-import { newPhotoId } from '../../../../src/engine/core/ids.js';
+import { PhotoRepository } from '../../engine/repositories/PhotoRepository.js';
+import { newPhotoId } from '../../engine/core/ids.js';
 
 function shape(p) {
   if (!p) return null;

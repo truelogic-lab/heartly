@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { BlockRepository } from '../../../../src/engine/repositories/BlockRepository.js';
-import { newBlockId } from '../../../../src/engine/core/ids.js';
+import { BlockRepository } from '../../engine/repositories/BlockRepository.js';
+import { newBlockId } from '../../engine/core/ids.js';
 
 function shape(b) {
   if (!b) return null;

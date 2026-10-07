@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { ProfileRepository } from '../../../../src/engine/repositories/ProfileRepository.js';
-import { newProfileId } from '../../../../src/engine/core/ids.js';
+import { ProfileRepository } from '../../engine/repositories/ProfileRepository.js';
+import { newProfileId } from '../../engine/core/ids.js';
 
 function shape(p) {
   if (!p) return null;

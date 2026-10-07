@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import {
   signAccess, signRefresh, verifyRefresh, cookieOptions,
 } from '../lib/jwt.js';
-import { newUserId, newProfileId } from '../../../../src/engine/core/ids.js';
+import { newUserId, newProfileId } from '../engine/core/ids.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN = 8;

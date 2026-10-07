@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { PromptRepository } from '../../../../src/engine/repositories/PromptRepository.js';
-import { newPromptId } from '../../../../src/engine/core/ids.js';
+import { PromptRepository } from '../../engine/repositories/PromptRepository.js';
+import { newPromptId } from '../../engine/core/ids.js';
 
 function shape(p) {
   if (!p) return null;

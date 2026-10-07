@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { MessageRepository } from '../../../../src/engine/repositories/MessageRepository.js';
-import { newMessageId } from '../../../../src/engine/core/ids.js';
+import { MessageRepository } from '../../engine/repositories/MessageRepository.js';
+import { newMessageId } from '../../engine/core/ids.js';
 
 function shape(m) {
   if (!m) return null;

@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import { UserRepository } from '../../../../src/engine/repositories/UserRepository.js';
-import { newUserId } from '../../../../src/engine/core/ids.js';
+import { UserRepository } from '../../engine/repositories/UserRepository.js';
+import { newUserId } from '../../engine/core/ids.js';
 
 export class PrismaUserRepository extends UserRepository {
   async findById(id) { return prisma.user.findUnique({ where: { id } }); }
