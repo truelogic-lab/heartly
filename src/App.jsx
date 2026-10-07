@@ -6,6 +6,8 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import SplashPage from './pages/SplashPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import DiscoverPage from './pages/DiscoverPage.jsx';
 import SwipePage from './pages/SwipePage.jsx';
 import MatchPage from './pages/MatchPage.jsx';
@@ -39,6 +41,8 @@ export default function App() {
       <Route path="/splash" element={<SplashPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Authenticated — wrapped in the app shell with bottom tabs */}
       <Route element={<ProtectedRoute />}>

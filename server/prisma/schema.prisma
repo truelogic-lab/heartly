@@ -46,6 +46,7 @@ model User {
   blocksRecv  Block[]  @relation("BlockTo")
   reportsGiven Report[] @relation("ReportFrom")
   reportsRecv  Report[] @relation("ReportTo")
+  passwordResetTokens PasswordResetToken[]
 
   @@index([email])
   @@map("users")
@@ -251,4 +252,23 @@ model Report {
   @@index([reporterId])
   @@index([reportedId])
   @@map("reports")
+}
+
+// =========================================================
+// PasswordResetToken — one-time token for reset flows
+// =========================================================
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash  String   @unique     // SHA-256 of the raw token
+  expiresAt  DateTime
+  usedAt     DateTime?
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
 }

@@ -24,7 +24,8 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.0",
     "multer": "^2.4.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "resend": "^6.32.1"
   },
   "devDependencies": {
     "prisma": "^5.22.0"
