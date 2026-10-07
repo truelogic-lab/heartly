@@ -1,6 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 
+/* GET — read the current user's enriched profile */
 router.get('/me', async (req, res, next) => {
   try {
     const engine = req.app.locals.engine;
@@ -10,11 +11,17 @@ router.get('/me', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+/* PUT — create or update the profile (idempotent) */
 router.put('/me', async (req, res, next) => {
   try {
     const engine = req.app.locals.engine;
-    const userId = req.body.userId || 'demo_user';
-    const updated = await engine.services.profile.update(userId, req.body);
+    const { userId = 'demo_user', ...patch } = req.body;
+
+    // Ensure the profile exists first (creates a minimal one if missing)
+    await engine.services.profile.ensureProfile(userId, {});
+
+    // Then apply the patch
+    const updated = await engine.services.profile.update(userId, patch);
     res.json(updated);
   } catch (e) { next(e); }
 });
