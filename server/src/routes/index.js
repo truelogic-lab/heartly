@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authRoutes from './auth.routes.js';
 import profileRoutes from './profile.routes.js';
 import discoveryRoutes from './discovery.routes.js';
 import likeRoutes from './like.routes.js';
@@ -10,6 +11,7 @@ const router = Router();
 
 router.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
+router.use('/auth', authRoutes);
 router.use('/profile', profileRoutes);
 router.use('/', discoveryRoutes);
 router.use('/', likeRoutes);
