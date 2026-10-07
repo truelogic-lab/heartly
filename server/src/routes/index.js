@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import profileRoutes from './profile.routes.js';
+import discoveryRoutes from './discovery.routes.js';
+import likeRoutes from './like.routes.js';
+import matchRoutes from './match.routes.js';
+import chatRoutes from './chat.routes.js';
+import safetyRoutes from './safety.routes.js';
+
+const router = Router();
+
+router.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
+router.use('/profile', profileRoutes);
+router.use('/', discoveryRoutes);
+router.use('/', likeRoutes);
+router.use('/matches', matchRoutes);
+router.use('/chat', chatRoutes);
+router.use('/safety', safetyRoutes);
+
+export default router;

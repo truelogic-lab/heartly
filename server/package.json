@@ -1,0 +1,27 @@
+{
+  "name": "heartly-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Heartly backend — Express API + Prisma repositories for the dating engine.",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "test:prisma": "node --env-file=.env --test src/repositories/prisma/__tests__/**/*.test.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}

@@ -1,0 +1,254 @@
+// =========================================================
+// Heartly — Prisma schema
+//
+// Maps the 8 engine repository interfaces to Postgres tables.
+// One model per interface. Field names match what the memory
+// implementations in src/engine/repositories/memory/ store.
+//
+// The engine does NOT depend on Prisma. It only depends on the
+// repository interfaces. This schema is the DB-side contract.
+// =========================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+// =========================================================
+// User — engine/repositories/UserRepository.js
+// =========================================================
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  deactivated  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile  Profile?
+  photos   Photo[]
+  prompts  Prompt[]
+
+  likesGiven   Like[]   @relation("LikeFrom")
+  likesReceived Like[]  @relation("LikeTo")
+  passesGiven  Pass[]   @relation("PassFrom")
+
+  matchesAsA Match[] @relation("MatchUserA")
+  matchesAsB Match[] @relation("MatchUserB")
+
+  messages    Message[]
+  blocksGiven Block[]  @relation("BlockFrom")
+  blocksRecv  Block[]  @relation("BlockTo")
+  reportsGiven Report[] @relation("ReportFrom")
+  reportsRecv  Report[] @relation("ReportTo")
+
+  @@index([email])
+  @@map("users")
+}
+
+// =========================================================
+// Profile — engine/repositories/ProfileRepository.js
+// =========================================================
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String   @default("")
+  bio         String   @default("")
+  birthdate   BigInt?  // ms since epoch
+  gender      String?
+  lookingFor  String   @default("everyone")
+  intention   String?
+
+  // Location as flattened lat/lng — one row is one location
+  lat         Float?
+  lng         Float?
+
+  // Interests + preferences as JSON for flexibility
+  interests   String[] @default([])
+  preferences Json     @default("{}")
+
+  verified     Boolean @default(false)
+  deactivated  Boolean @default(false)
+  lastActiveAt BigInt  @default(0) // ms since epoch
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([deactivated])
+  @@index([lastActiveAt])
+  @@index([gender])
+  @@map("profiles")
+}
+
+// =========================================================
+// Photo — engine/repositories/PhotoRepository.js
+// =========================================================
+model Photo {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  url       String
+  order     Int      @default(0)
+  isPrimary Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, order])
+  @@map("photos")
+}
+
+// =========================================================
+// Like — engine/repositories/LikeRepository.js
+// Covers both "like" and "super_like"
+// =========================================================
+model Like {
+  id         String   @id @default(cuid())
+  fromUserId String
+  fromUser   User     @relation("LikeFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User     @relation("LikeTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  kind       String   @default("like") // "like" | "super_like"
+
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("likes")
+}
+
+// =========================================================
+// Pass — separate table for clarity
+// =========================================================
+model Pass {
+  id         String   @id @default(cuid())
+  fromUserId String
+  fromUser   User     @relation("PassFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([fromUserId])
+  @@map("passes")
+}
+
+// =========================================================
+// Match — engine/repositories/MatchRepository.js
+//
+// One row per pair. Users stored in stable sort order.
+// =========================================================
+model Match {
+  id                 String   @id @default(cuid())
+
+  userAId            String
+  userA              User     @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId            String
+  userB              User     @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  lastMessageAt      BigInt   @default(0)
+  lastMessagePreview String   @default("")
+
+  blocked            Boolean  @default(false)
+  deleted            Boolean  @default(false)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  messages           Message[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId, deleted])
+  @@index([userBId, deleted])
+  @@index([lastMessageAt])
+  @@map("matches")
+}
+
+// =========================================================
+// Message — engine/repositories/MessageRepository.js
+// =========================================================
+model Message {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  body      String
+
+  read      Boolean  @default(false)
+  readAt    BigInt   @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([matchId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+// =========================================================
+// Block — engine/repositories/BlockRepository.js
+// =========================================================
+model Block {
+  id         String   @id @default(cuid())
+  blockerId  String
+  blocker    User     @relation("BlockFrom", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId  String
+  blocked    User     @relation("BlockTo", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+// =========================================================
+// Prompt — engine/repositories/PromptRepository.js
+// =========================================================
+model Prompt {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  promptId  String   // e.g. "sunrise", "coffee"
+  answer    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, promptId])
+  @@index([userId])
+  @@map("prompts")
+}
+
+// =========================================================
+// Report — for safety reporting (not yet in engine repository)
+// =========================================================
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  reporter   User     @relation("ReportFrom", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId String
+  reported   User     @relation("ReportTo", fields: [reportedId], references: [id], onDelete: Cascade)
+
+  reason     String
+  createdAt  DateTime @default(now())
+
+  @@index([reporterId])
+  @@index([reportedId])
+  @@map("reports")
+}
